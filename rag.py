@@ -43,7 +43,7 @@ def load_llm():
     model_path = "/scratch/zl3057/llama-3b-hf"
     model = AutoModelForCausalLM.from_pretrained(model_path, device_map="auto")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
-    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=100, device=0)
+    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=100)
     return HuggingFacePipeline(pipeline=pipe)
 
 

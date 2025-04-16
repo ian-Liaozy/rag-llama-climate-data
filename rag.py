@@ -5,16 +5,16 @@ import numpy as np
 from tqdm import tqdm
 from typing import List
 from langchain_community.vectorstores import FAISS
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders import TextLoader
+from langchain_community.document_loaders import TextLoader
 from langchain.llms import HuggingFacePipeline
 from langchain.chains import RetrievalQA
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 
 # ----- Load and split documents -----
-def load_and_chunk_documents(data_dir="processed_txt/test"):
+def load_and_chunk_documents(data_dir="/scratch/zl3057/processed_txt/test"):
     docs = []
     for filename in os.listdir(data_dir):
         if filename.endswith(".txt"):
@@ -109,7 +109,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if not os.path.exists("faiss_index"):
-        chunks = load_and_chunk_documents("processed_txt/test")
+        chunks = load_and_chunk_documents("/scratch/zl3057/processed_txt/test")
         build_vector_store(chunks)
 
     if args.mode == "interactive":

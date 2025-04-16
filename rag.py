@@ -35,7 +35,7 @@ def build_vector_store(chunks):
 # ----- Load retriever -----
 def load_vector_store():
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-    return FAISS.load_local("faiss_index", embeddings)
+    return FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
 
 
 # ----- Load LoRA fine-tuned LLaMA-3B -----

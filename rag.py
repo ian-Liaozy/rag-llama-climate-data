@@ -8,7 +8,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
-from langchain_community.llms import HuggingFacePipeline
+from langchain_huggingface import HuggingFacePipeline
 from langchain.chains import RetrievalQA
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
@@ -83,7 +83,7 @@ def evaluate_rag_system(eval_path="eval/questions.jsonl", rerank=False):
             prompt = f"Answer based on: {context}\n\nQuestion: {query}\nAnswer:"
             answer = rag.llm(prompt)
         else:
-            answer = rag.run(query)
+            answer = rag.invoke(query)
         elapsed = time.time() - start
 
         total_time += elapsed

@@ -4,7 +4,7 @@ import json
 import numpy as np
 from tqdm import tqdm
 from typing import List
-from langchain.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders import TextLoader
@@ -14,11 +14,11 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 
 # ----- Load and split documents -----
-def load_and_chunk_documents(data_dir):
+def load_and_chunk_documents(data_dir="processed_txt/test"):
     docs = []
     for filename in os.listdir(data_dir):
         if filename.endswith(".txt"):
-            loader = TextLoader(os.path.join(data_dir, filename))
+            loader = TextLoader(os.path.join(data_dir, filename), encoding="utf-8")
             docs.extend(loader.load())
     splitter = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=50)
     return splitter.split_documents(docs)
@@ -38,11 +38,12 @@ def load_vector_store():
     return FAISS.load_local("faiss_index", embeddings)
 
 
-# ----- Load LLM (Replace with LLaMA-3B on HPC as needed) -----
+# ----- Load LoRA fine-tuned LLaMA-3B -----
 def load_llm():
-    model = AutoModelForCausalLM.from_pretrained("tiiuae/falcon-7b-instruct", device_map="auto")
-    tokenizer = AutoTokenizer.from_pretrained("tiiuae/falcon-7b-instruct")
-    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=100)
+    model_path = "./checkpoints/final_model"
+    model = AutoModelForCausalLM.from_pretrained(model_path, device_map="auto")
+    tokenizer = AutoTokenizer.from_pretrained(model_path)
+    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=100, device=0)
     return HuggingFacePipeline(pipeline=pipe)
 
 
@@ -99,40 +100,16 @@ def evaluate_rag_system(eval_path="eval/questions.jsonl", rerank=False):
     print(f"Average Latency: {avg_time:.3f}s per request")
 
 
-# ----- Optional: Mock fine-tuned model baseline -----
-def evaluate_finetuned_baseline(eval_path="eval/questions.jsonl"):
-    with open(eval_path) as f:
-        examples = [json.loads(line) for line in f]
-
-    # Simulate a fast response (mock baseline)
-    total_time, correct = 0, 0
-    for ex in tqdm(examples, desc="Evaluating Fine-Tuned Baseline"):
-        query, expected = ex["question"], ex["answer"]
-        start = time.time()
-        # TODO: Replace with actual fine-tuned model call
-        answer = "mock_answer"
-        time.sleep(0.1)  # simulate latency
-        elapsed = time.time() - start
-
-        total_time += elapsed
-        if expected.lower() in answer.lower():
-            correct += 1
-
-    print("\n\n===== Fine-Tuned Model Baseline =====")
-    print(f"Accuracy: {correct / len(examples) * 100:.2f}%")
-    print(f"Average Latency: {total_time / len(examples):.3f}s per request")
-
-
 # ----- CLI Entry -----
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument("--mode", choices=["interactive", "rag_eval", "finetune_eval"], default="interactive")
+    parser.add_argument("--mode", choices=["interactive", "rag_eval"], default="interactive")
     parser.add_argument("--rerank", action="store_true")
     args = parser.parse_args()
 
     if not os.path.exists("faiss_index"):
-        chunks = load_and_chunk_documents("data/")
+        chunks = load_and_chunk_documents("processed_txt/test")
         build_vector_store(chunks)
 
     if args.mode == "interactive":
@@ -144,5 +121,3 @@ if __name__ == "__main__":
             print("Answer:", rag.run(query))
     elif args.mode == "rag_eval":
         evaluate_rag_system(rerank=args.rerank)
-    elif args.mode == "finetune_eval":
-        evaluate_finetuned_baseline()

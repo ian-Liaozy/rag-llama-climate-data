@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 from typing import List
 from langchain_community.vectorstores import FAISS
-from :class:`~langchain_huggingface import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
 from langchain_community.llms import HuggingFacePipeline

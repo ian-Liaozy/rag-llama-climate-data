@@ -5,10 +5,10 @@ import numpy as np
 from tqdm import tqdm
 from typing import List
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from :class:`~langchain_huggingface import HuggingFaceEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
-from langchain.llms import HuggingFacePipeline
+from langchain_community.llms import HuggingFacePipeline
 from langchain.chains import RetrievalQA
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
@@ -40,7 +40,7 @@ def load_vector_store():
 
 # ----- Load LoRA fine-tuned LLaMA-3B -----
 def load_llm():
-    model_path = "./checkpoints/final_model"
+    model_path = "/scratch/zl3057/llama-3b-hf"
     model = AutoModelForCausalLM.from_pretrained(model_path, device_map="auto")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=100, device=0)

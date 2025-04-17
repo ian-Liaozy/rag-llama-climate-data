@@ -14,7 +14,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 
 # Load and split documents
-def load_and_chunk_documents(data_dir="/scratch/zl3057/fine-tuning-climate-data/checkpoints/final_model"):
+def load_and_chunk_documents(data_dir="/scratch/zl3057/processed_txt/test"):
     docs = []
     for filename in os.listdir(data_dir):
         if filename.endswith(".txt"):
@@ -40,7 +40,7 @@ def load_vector_store():
 
 # Load LoRA fine-tuned LLaMA-3B
 def load_llm():
-    model_path = "/scratch/zl3057/llama-3b-hf"
+    model_path = "/scratch/zl3057/fine-tuning-climate-data/checkpoints/final_model"
     model = AutoModelForCausalLM.from_pretrained(model_path, device_map="auto")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=100)
@@ -106,6 +106,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=["interactive", "rag_eval"], default="interactive")
+    parser.add_argument("--model", choices=["original", "finetuned"], default="original")
     parser.add_argument("--rerank", action="store_true")
     args = parser.parse_args()
 
@@ -122,3 +123,8 @@ if __name__ == "__main__":
             print("Answer:", rag.run(query))
     elif args.mode == "rag_eval":
         evaluate_rag_system(rerank=args.rerank)
+
+    if args.model == "finetuned":
+        model_path = "/scratch/zl3057/llama-3b-hf"
+    else:
+        model_path = "meta-llama/Llama-3-8B-Instruct"

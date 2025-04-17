@@ -12,7 +12,7 @@ from langchain_huggingface import HuggingFacePipeline
 from langchain.chains import RetrievalQA
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
-
+model_path = "/scratch/zl3057/llama-3b-hf"  # Default model path
 # Load and split documents
 def load_and_chunk_documents(data_dir="/scratch/zl3057/processed_txt/test"):
     docs = []
@@ -40,7 +40,8 @@ def load_vector_store():
 
 # Load LoRA fine-tuned LLaMA-3B
 def load_llm():
-    model_path = "/scratch/zl3057/fine-tuning-climate-data/checkpoints/final_model"
+    nonlocal model_path
+    # model_path = "/scratch/zl3057/fine-tuning-climate-data/checkpoints/final_model"
     model = AutoModelForCausalLM.from_pretrained(model_path, device_map="auto")
     tokenizer = AutoTokenizer.from_pretrained(model_path)
     pipe = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=100)
@@ -114,6 +115,9 @@ if __name__ == "__main__":
         chunks = load_and_chunk_documents("/scratch/zl3057/processed_txt/test")
         build_vector_store(chunks)
 
+    if args.model == "finetuned":
+        model_path = "/scratch/zl3057/fine-tuning-climate-data/checkpoints/final_model"
+
     if args.mode == "interactive":
         rag = build_rag_pipeline()
         while True:
@@ -124,7 +128,4 @@ if __name__ == "__main__":
     elif args.mode == "rag_eval":
         evaluate_rag_system(rerank=args.rerank)
 
-    if args.model == "finetuned":
-        model_path = "/scratch/zl3057/llama-3b-hf"
-    else:
-        model_path = "meta-llama/Llama-3-8B-Instruct"
+    

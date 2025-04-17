@@ -14,7 +14,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 
 # Load and split documents
-def load_and_chunk_documents(data_dir="/scratch/zl3057/processed_txt/test"):
+def load_and_chunk_documents(data_dir="/scratch/zl3057/fine-tuning-climate-data/checkpoints/final_model"):
     docs = []
     for filename in os.listdir(data_dir):
         if filename.endswith(".txt"):
@@ -88,7 +88,6 @@ def evaluate_rag_system(eval_path="eval/questions.jsonl", rerank=False):
         elapsed = time.time() - start
 
         total_time += elapsed
-        print(expected, ex, answer)
         if expected.lower() in answer.lower():
             correct += 1
 

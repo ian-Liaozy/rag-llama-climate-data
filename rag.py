@@ -40,7 +40,6 @@ def load_vector_store():
 
 # Load LoRA fine-tuned LLaMA-3B
 def load_llm():
-    nonlocal model_path
     # model_path = "/scratch/zl3057/fine-tuning-climate-data/checkpoints/final_model"
     model = AutoModelForCausalLM.from_pretrained(model_path, device_map="auto")
     tokenizer = AutoTokenizer.from_pretrained(model_path)

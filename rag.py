@@ -87,6 +87,7 @@ def evaluate_rag_system(eval_path="eval/questions.jsonl", rerank=False):
         elapsed = time.time() - start
 
         total_time += elapsed
+        print(expected, ex)
         if expected.lower() in answer.lower():
             correct += 1
 

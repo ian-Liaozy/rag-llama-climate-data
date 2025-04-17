@@ -13,7 +13,7 @@ from langchain.chains import RetrievalQA
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 
 
-# ----- Load and split documents -----
+# Load and split documents
 def load_and_chunk_documents(data_dir="/scratch/zl3057/processed_txt/test"):
     docs = []
     for filename in os.listdir(data_dir):
@@ -24,7 +24,7 @@ def load_and_chunk_documents(data_dir="/scratch/zl3057/processed_txt/test"):
     return splitter.split_documents(docs)
 
 
-# ----- Create FAISS vector index -----
+# Create FAISS vector index
 def build_vector_store(chunks):
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     db = FAISS.from_documents(chunks, embeddings)
@@ -32,13 +32,13 @@ def build_vector_store(chunks):
     return db
 
 
-# ----- Load retriever -----
+# Load retriever
 def load_vector_store():
     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     return FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
 
 
-# ----- Load LoRA fine-tuned LLaMA-3B -----
+# Load LoRA fine-tuned LLaMA-3B
 def load_llm():
     model_path = "/scratch/zl3057/llama-3b-hf"
     model = AutoModelForCausalLM.from_pretrained(model_path, device_map="auto")
@@ -47,21 +47,21 @@ def load_llm():
     return HuggingFacePipeline(pipeline=pipe)
 
 
-# ----- Apply similarity-based reranking -----
+# Apply similarity-based reranking
 def rerank_docs(query: str, docs: List[str], embedding_model):
     query_emb = embedding_model.embed_query(query)
     doc_scores = [(doc.page_content, np.dot(query_emb, embedding_model.embed_documents([doc.page_content])[0])) for doc in docs]
     return sorted(doc_scores, key=lambda x: x[1], reverse=True)
 
 
-# ----- Build RAG QA pipeline -----
+# Build RAG QA pipeline
 def build_rag_pipeline():
     retriever = load_vector_store().as_retriever(search_type="similarity", k=6)
     llm = load_llm()
     return RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
 
 
-# ----- Evaluate system performance -----
+# Evaluate system performance
 def evaluate_rag_system(eval_path="eval/questions.jsonl", rerank=False):
     with open(eval_path) as f:
         examples = [json.loads(line) for line in f]
@@ -100,7 +100,7 @@ def evaluate_rag_system(eval_path="eval/questions.jsonl", rerank=False):
     print(f"Average Latency: {avg_time:.3f}s per request")
 
 
-# ----- CLI Entry -----
+# CLI Entry
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()

@@ -83,7 +83,8 @@ def evaluate_rag_system(eval_path="eval/questions.jsonl", rerank=False):
             prompt = f"Answer based on: {context}\n\nQuestion: {query}\nAnswer:"
             answer = rag.llm(prompt)
         else:
-            answer = rag.invoke(query)
+            response = rag.invoke(query)
+            answer = response["result"] if isinstance(response, dict) and "result" in response else str(response)
         elapsed = time.time() - start
 
         total_time += elapsed

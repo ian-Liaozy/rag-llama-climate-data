@@ -66,8 +66,14 @@ def evaluate_rag_system(eval_path="eval/questions.jsonl", rerank=False):
     with open(eval_path) as f:
         examples = [json.loads(line) for line in f]
 
-    rag = build_rag_pipeline()
+    # rag = build_rag_pipeline()
+    # embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    retriever = load_vector_store().as_retriever(search_type="similarity", k=6)
+    llm = load_llm()
     embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+    rag = RetrievalQA.from_chain_type(llm=llm, retriever=retriever)
+
 
     total_time, correct = 0, 0
 
@@ -77,11 +83,12 @@ def evaluate_rag_system(eval_path="eval/questions.jsonl", rerank=False):
 
         start = time.time()
         if rerank:
-            raw_docs = rag.retriever.get_relevant_documents(query)
+            raw_docs = rag.retriever.invoke(query)
             top_reranked = rerank_docs(query, raw_docs, embedding_model)
             context = " ".join([doc[0] for doc in top_reranked[:3]])
             prompt = f"Answer based on: {context}\n\nQuestion: {query}\nAnswer:"
-            answer = rag.llm(prompt)
+            # answer = rag.llm(prompt)
+            answer = llm(prompt)
         else:
             response = rag.invoke(query)
             answer = response["result"] if isinstance(response, dict) and "result" in response else str(response)
